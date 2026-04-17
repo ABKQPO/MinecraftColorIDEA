@@ -3,6 +3,8 @@ package com.hfstudio.minecraftcoloridea.editor
 import java.awt.Dimension
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class MinecraftSourceMarkerInlaySessionTest {
     @Test
@@ -19,5 +21,29 @@ class MinecraftSourceMarkerInlaySessionTest {
 
         assertEquals(520, size.width)
         assertEquals(260, size.height)
+    }
+
+    @Test
+    fun visibleLineCaptureIsDisabledDuringBulkDocumentUpdates() {
+        assertFalse(
+            MinecraftColorEditorSession.canCaptureVisibleLineRange(
+                isDispatchThread = true,
+                isDisposed = false,
+                isEditorDisposed = false,
+                isDocumentInBulkUpdate = true
+            )
+        )
+    }
+
+    @Test
+    fun visibleLineCaptureRemainsEnabledForNormalEditorState() {
+        assertTrue(
+            MinecraftColorEditorSession.canCaptureVisibleLineRange(
+                isDispatchThread = true,
+                isDisposed = false,
+                isEditorDisposed = false,
+                isDocumentInBulkUpdate = false
+            )
+        )
     }
 }

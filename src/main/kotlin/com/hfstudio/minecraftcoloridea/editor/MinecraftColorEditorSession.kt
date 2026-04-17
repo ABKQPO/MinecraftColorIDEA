@@ -39,6 +39,20 @@ class MinecraftColorEditorSession(
     private val settings: MinecraftColorSettingsState,
     private val engine: MinecraftHighlightEngine
 ) : Disposable {
+    companion object {
+        internal fun canCaptureVisibleLineRange(
+            isDispatchThread: Boolean,
+            isDisposed: Boolean,
+            isEditorDisposed: Boolean,
+            isDocumentInBulkUpdate: Boolean
+        ): Boolean {
+            return isDispatchThread &&
+                !isDisposed &&
+                !isEditorDisposed &&
+                !isDocumentInBulkUpdate
+        }
+    }
+
     private data class TrackedHighlighter(
         val highlighter: RangeHighlighter
     )
@@ -59,7 +73,7 @@ class MinecraftColorEditorSession(
     private val sourceMarkerSession = MinecraftSourceMarkerInlaySession(editor)
     private val sourceMarkerCollector = MinecraftSourceMarkerCollector()
     private val visibleAreaListener = VisibleAreaListener { event: VisibleAreaEvent ->
-        latestVisibleLineRange = visibleLineRange(event.newRectangle)
+        captureVisibleLineRangeIfPossible(event.newRectangle)
         scheduleRefresh()
     }
 
@@ -472,11 +486,21 @@ class MinecraftColorEditorSession(
     }
 
     private fun captureVisibleLineRangeIfPossible() {
-        if (!ApplicationManager.getApplication().isDispatchThread || disposed || editor.isDisposed) {
+        captureVisibleLineRangeIfPossible(editor.scrollingModel.visibleArea)
+    }
+
+    private fun captureVisibleLineRangeIfPossible(visibleArea: Rectangle) {
+        if (!canCaptureVisibleLineRange(
+                isDispatchThread = ApplicationManager.getApplication().isDispatchThread,
+                isDisposed = disposed,
+                isEditorDisposed = editor.isDisposed,
+                isDocumentInBulkUpdate = editor.document.isInBulkUpdate
+            )
+        ) {
             return
         }
 
-        latestVisibleLineRange = visibleLineRange(editor.scrollingModel.visibleArea)
+        latestVisibleLineRange = visibleLineRange(visibleArea)
     }
 
     private fun visibleLineRange(visibleArea: Rectangle): MinecraftVisibleLineRange? {
