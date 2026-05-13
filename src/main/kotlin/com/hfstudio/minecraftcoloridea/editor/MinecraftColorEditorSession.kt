@@ -51,6 +51,27 @@ class MinecraftColorEditorSession(
                 !isEditorDisposed &&
                 !isDocumentInBulkUpdate
         }
+
+        internal fun readVisibleLineRangeIfAllowed(
+            isDispatchThread: Boolean,
+            isDisposed: Boolean,
+            isEditorDisposed: Boolean,
+            isDocumentInBulkUpdate: Boolean,
+            visibleAreaSupplier: () -> Rectangle,
+            lineRangeComputer: (Rectangle) -> MinecraftVisibleLineRange?
+        ): MinecraftVisibleLineRange? {
+            if (!canCaptureVisibleLineRange(
+                    isDispatchThread = isDispatchThread,
+                    isDisposed = isDisposed,
+                    isEditorDisposed = isEditorDisposed,
+                    isDocumentInBulkUpdate = isDocumentInBulkUpdate
+                )
+            ) {
+                return null
+            }
+
+            return lineRangeComputer(visibleAreaSupplier())
+        }
     }
 
     private data class TrackedHighlighter(
@@ -486,21 +507,25 @@ class MinecraftColorEditorSession(
     }
 
     private fun captureVisibleLineRangeIfPossible() {
-        captureVisibleLineRangeIfPossible(editor.scrollingModel.visibleArea)
+        latestVisibleLineRange = readVisibleLineRangeIfAllowed(
+            isDispatchThread = ApplicationManager.getApplication().isDispatchThread,
+            isDisposed = disposed,
+            isEditorDisposed = editor.isDisposed,
+            isDocumentInBulkUpdate = editor.document.isInBulkUpdate,
+            visibleAreaSupplier = { editor.scrollingModel.visibleArea },
+            lineRangeComputer = ::visibleLineRange
+        )
     }
 
     private fun captureVisibleLineRangeIfPossible(visibleArea: Rectangle) {
-        if (!canCaptureVisibleLineRange(
-                isDispatchThread = ApplicationManager.getApplication().isDispatchThread,
-                isDisposed = disposed,
-                isEditorDisposed = editor.isDisposed,
-                isDocumentInBulkUpdate = editor.document.isInBulkUpdate
-            )
-        ) {
-            return
-        }
-
-        latestVisibleLineRange = visibleLineRange(visibleArea)
+        latestVisibleLineRange = readVisibleLineRangeIfAllowed(
+            isDispatchThread = ApplicationManager.getApplication().isDispatchThread,
+            isDisposed = disposed,
+            isEditorDisposed = editor.isDisposed,
+            isDocumentInBulkUpdate = editor.document.isInBulkUpdate,
+            visibleAreaSupplier = { visibleArea },
+            lineRangeComputer = ::visibleLineRange
+        )
     }
 
     private fun visibleLineRange(visibleArea: Rectangle): MinecraftVisibleLineRange? {

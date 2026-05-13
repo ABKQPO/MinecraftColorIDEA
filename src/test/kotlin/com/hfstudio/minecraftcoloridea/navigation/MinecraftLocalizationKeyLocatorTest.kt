@@ -188,6 +188,18 @@ class MinecraftLocalizationKeyLocatorTest {
     }
 
     @Test
+    fun doesNotTreatPlainJavaMethodDeclarationsAsLocalizedKeys() {
+        val source = """public static LightDarkMode current() { return DARK_MODE; }"""
+
+        val resolved = MinecraftLocalizationKeyLocator().locateForDeclaration(
+            source = source,
+            caretOffset = source.indexOf("current")
+        )
+
+        assertNull(resolved)
+    }
+
+    @Test
     fun resolvesRealCallAfterClosedBlockCommentPrefix() {
         val source = """/* note */ I18n.format("tooltip.backpack")"""
 

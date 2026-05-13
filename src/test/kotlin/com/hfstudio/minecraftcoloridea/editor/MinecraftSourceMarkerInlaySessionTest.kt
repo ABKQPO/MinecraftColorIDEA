@@ -1,6 +1,7 @@
 package com.hfstudio.minecraftcoloridea.editor
 
 import java.awt.Dimension
+import java.awt.Rectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -45,5 +46,55 @@ class MinecraftSourceMarkerInlaySessionTest {
                 isDocumentInBulkUpdate = false
             )
         )
+    }
+
+    @Test
+    fun visibleLineRangeLookupSkipsVisibleAreaAccessDuringBulkUpdates() {
+        var visibleAreaRequested = false
+        var computed = false
+
+        val result = MinecraftColorEditorSession.readVisibleLineRangeIfAllowed(
+            isDispatchThread = true,
+            isDisposed = false,
+            isEditorDisposed = false,
+            isDocumentInBulkUpdate = true,
+            visibleAreaSupplier = {
+                visibleAreaRequested = true
+                Rectangle(0, 0, 16, 16)
+            },
+            lineRangeComputer = {
+                computed = true
+                MinecraftVisibleLineRange(0, 0)
+            }
+        )
+
+        assertEquals(null, result)
+        assertFalse(visibleAreaRequested)
+        assertFalse(computed)
+    }
+
+    @Test
+    fun visibleLineRangeLookupSkipsVisibleAreaAccessOffEdt() {
+        var visibleAreaRequested = false
+        var computed = false
+
+        val result = MinecraftColorEditorSession.readVisibleLineRangeIfAllowed(
+            isDispatchThread = false,
+            isDisposed = false,
+            isEditorDisposed = false,
+            isDocumentInBulkUpdate = false,
+            visibleAreaSupplier = {
+                visibleAreaRequested = true
+                Rectangle(0, 0, 16, 16)
+            },
+            lineRangeComputer = {
+                computed = true
+                MinecraftVisibleLineRange(0, 0)
+            }
+        )
+
+        assertEquals(null, result)
+        assertFalse(visibleAreaRequested)
+        assertFalse(computed)
     }
 }

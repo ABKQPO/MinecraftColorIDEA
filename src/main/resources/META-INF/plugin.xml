@@ -16,6 +16,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.hfstudio.minecraftcoloridea.settings.MinecraftColorSettingsState"/>
         <applicationService serviceImplementation="com.hfstudio.minecraftcoloridea.editor.MinecraftColorApplicationService"/>
+        <completion.contributor
+                language="TEXT"
+                implementationClass="com.hfstudio.minecraftcoloridea.lang.MinecraftLangCompletionContributor"/>
+        <annotator language="TEXT" implementationClass="com.hfstudio.minecraftcoloridea.lang.MinecraftLangAnnotator"/>
         <applicationConfigurable
                 id="com.hfstudio.minecraftcoloridea.settings"
                 key="settings.display.name"
@@ -30,6 +34,7 @@
                 instance="com.hfstudio.minecraftcoloridea.settings.MinecraftColorProjectConfigurable"/>
         <gotoDeclarationHandler implementation="com.hfstudio.minecraftcoloridea.navigation.MinecraftGotoLocalizedDeclarationHandler"/>
         <gotoDeclarationHandler implementation="com.hfstudio.minecraftcoloridea.navigation.MinecraftGotoCodeUsageDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="com.hfstudio.minecraftcoloridea.lang.MinecraftLangGotoHandler"/>
         <editorFactoryListener implementation="com.hfstudio.minecraftcoloridea.editor.MinecraftColorEditorFactoryListener"/>
         <editorFactoryDocumentListener implementation="com.hfstudio.minecraftcoloridea.editor.MinecraftColorDocumentListener"/>
         <backgroundPostStartupActivity implementation="com.hfstudio.minecraftcoloridea.editor.MinecraftColorStartupActivity"/>

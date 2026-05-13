@@ -3,6 +3,7 @@ package com.hfstudio.minecraftcoloridea.settings
 import com.hfstudio.minecraftcoloridea.core.MinecraftColorConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class MinecraftColorSettingsStateTest {
     @Test
@@ -24,5 +25,17 @@ class MinecraftColorSettingsStateTest {
         state.loadState(storedState)
 
         assertEquals(MinecraftColorConfig.DEFAULT_MAX_ENUMERATED_KEYS, state.toConfig().maxEnumeratedKeys)
+    }
+
+    @Test
+    fun persistsLangColorOverrides() {
+        val state = MinecraftColorSettingsState()
+
+        state.langKeyColor = 0x112233
+        state.langEqualColor = 0x445566
+
+        assertEquals(0x112233, state.langKeyColor)
+        assertEquals(0x445566, state.langEqualColor)
+        assertNotEquals(state.langKeyColor, state.langEqualColor)
     }
 }
